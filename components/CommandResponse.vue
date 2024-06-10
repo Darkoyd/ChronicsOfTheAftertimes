@@ -1,6 +1,6 @@
 <template>
     <div class="flex flex-row font-mono">
-        <ContentDoc path="/test 2.md"/>
+        <ContentDoc :path="args[0]"/>
     </div>
 
 </template>
