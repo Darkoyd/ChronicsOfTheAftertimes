@@ -7,15 +7,16 @@
         <CommandResponse :command="cmd.command" :args="cmd.args"/>
     </div>
     <div class="flex flex-row font-mono">
-        <p class="text-green-600">user@host:~$</p> <input class="ml-2 bg-black outline-none" v-model="newCommand" @keyup.enter="addCommand()" autofocus onblur="this.focus()">
+        <p class="text-green-600">user@host:~$</p> <input class="ml-2 bg-black outline-none" v-model="newCommand" 
+        @keyup.enter="addCommand()" @keyup.up="retrieveFromHistory(historyIndex--)" autofocus onblur="this.focus()">
     </div>
 </template>
 
 <script setup lang="ts">
-const commands = ref([{
-    command: "cat",
-    args: ["test"]
-}])
+
+const historyIndex = ref(0)
+
+const commands = ref([])
 
 const newCommand = ref("")
 
@@ -26,9 +27,20 @@ const addCommand = () => {
         command: cmd || "",
         args: line
     }
+    if (cmd === "clear") {
+        commands.value = []
+        newCommand.value = ""
+        historyIndex.value = 0
+        return
+    }
     commands.value.push(newLine)
-    console.log(newLine)
+    historyIndex.value = commands.value.length-1
     newCommand.value = ""
+}
+
+const retrieveFromHistory = (index: number) => {
+    if (index < 0 || index >= commands.value.length) return
+    newCommand.value = commands.value[index].command + " " + commands.value[index].args.join(" ")
 }
 
 
