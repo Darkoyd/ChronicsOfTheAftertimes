@@ -1,6 +1,6 @@
 <template>
     <div class="flex flex-row font-mono whitespace-pre-wrap">
-        {{ parseCommand() }}
+        {{ response }}
     </div>
 
 </template>
@@ -10,12 +10,20 @@ const props = defineProps<{
     args: string[]
 }>()
 
-const parseCommand = () => {
+const response = ref('')
+
+const parseCommand = async () => {
     switch (props.command) {
         case "help":
             return help(props.args[0])
+        case "ls":
+            return await ls()
         default:
             return props.command + ": command not found"
     }
 }
+
+onMounted(async () => {
+    response.value = await parseCommand()
+})
 </script>
