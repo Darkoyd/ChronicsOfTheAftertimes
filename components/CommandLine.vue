@@ -1,13 +1,13 @@
 <template>
     <div class="flex flex-col font-mono" v-for="cmd in commands">
         <div class="flex flex-row">
-            <p class="text-green-600">user@host:~$</p>
+            <p class="text-green-600">admin@chronic {{ cmd.directory }} $</p>
             <div class="pl-2">{{ cmd.command }} {{ cmd.args.join(" ") }}</div>
         </div>
         <CommandResponse :command="cmd.command" :args="cmd.args"/>
     </div>
     <div class="flex flex-row font-mono">
-        <p class="text-green-600">user@host:~$</p> <input class="ml-2 bg-black outline-none" v-model="newCommand" 
+        <p class="text-green-600">admin@chronic {{ currentDirectory }} $</p> <input class="ml-2 bg-black outline-none" v-model="newCommand" 
         @keyup.enter="addCommand()" @keyup.up="retrieveFromHistory(historyIndex--)" autofocus onblur="this.focus()">
     </div>
 </template>
@@ -15,17 +15,22 @@
 <script setup lang="ts">
 
 const historyIndex = ref(0)
-
 const commands = ref([])
-
 const newCommand = ref("")
+
+// Import directory utility
+const { useDirectory } = await import('~/utils/cd')
+const { getCurrentDirectory } = useDirectory()
+
+const currentDirectory = computed(() => getCurrentDirectory())
 
 const addCommand = () => {
     let line = newCommand.value.split(" ")
     let cmd = line.shift()
     let newLine = {
         command: cmd || "",
-        args: line
+        args: line,
+        directory: getCurrentDirectory()
     }
     if (cmd === "clear") {
         commands.value = []

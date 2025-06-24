@@ -1,7 +1,8 @@
 const cmds = [
     'help [cmd]',
     'clear',
-    'ls'     
+    'ls [-l] [-h]',
+    'cd [dir]'     
 ]
 
 export default (arg: string) => {
@@ -15,7 +16,9 @@ export default (arg: string) => {
             case 'clear':
                 return 'clear \n Clears the terminal screen and scrollback buffer.'
             case 'ls':
-                return 'ls \n Lists the contents of the content folder.'
+                return 'ls [-l] [-h] \n Lists the contents of the content folder. \n   -l  use a long listing format \n   -h  with -l, print sizes in human readable format'
+            case 'cd':
+                return 'cd [dir] \n Change the current directory. \n   cd /     change to root directory \n   cd ..    go up one directory \n   cd .     stay in current directory \n   cd dir   change to specified directory'
         }
     }
 }

@@ -17,7 +17,9 @@ const parseCommand = async () => {
         case "help":
             return help(props.args[0])
         case "ls":
-            return await ls()
+            return await ls(props.args)
+        case "cd":
+            return await cd(props.args)
         default:
             return props.command + ": command not found"
     }
