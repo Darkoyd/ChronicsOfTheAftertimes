@@ -76,7 +76,7 @@ export default async (args: string[] = []) => {
     for (const arg of args) {
         if (arg.startsWith('-') && arg.length > 1) {
             for (const c of arg.slice(1)) {
-                if (!FLAGS.includes(c)) return `ls: invalid option -- '${c}'\nTry 'help ls' for more information.`
+                if (!FLAGS.includes(c)) return `ls: invalid option -- '${c}'\nTry 'help ls' for more information. I wrote it for exactly this kind of moment.`
                 opts.add(c)
             }
         } else if (arg) operands.push(arg)
@@ -107,5 +107,7 @@ export default async (args: string[] = []) => {
         blocks.push(withHeaders ? `${label}:${body ? '\n' + body : ''}` : body)
         if (opts.has('R')) queue.unshift(...subdirs.map(p => [label.replace(/\/$/, '') + p.slice(path === '/' ? 0 : path.length), p] as [string, string]))
     }
+    // One remark after the errors, not one per missing path. Even I have limits.
+    if (errors.length) errors.push(errors.length > 1 ? 'None of those exist. That has to be a talent.' : 'Nothing there. Not even a ruin.')
     return [errors.join('\n'), blocks.join(withHeaders ? '\n\n' : '\n')].filter(Boolean).join('\n')
 }

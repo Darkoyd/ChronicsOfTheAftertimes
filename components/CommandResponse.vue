@@ -23,7 +23,9 @@ const parseCommand = async () => {
         case "pwd":
             return useDirectory().getCurrentDirectory()
         default:
-            return props.command + ": command not found"
+            return props.command
+                ? `${props.command}: command not found\nEvery language ever spoken is in my memory, and none of them had that word.`
+                : "" // a bare Enter is not an error, merely a pause
     }
 }
 
