@@ -20,6 +20,8 @@ const parseCommand = async () => {
             return await ls(props.args)
         case "cd":
             return await cd(props.args)
+        case "pwd":
+            return useDirectory().getCurrentDirectory()
         default:
             return props.command + ": command not found"
     }

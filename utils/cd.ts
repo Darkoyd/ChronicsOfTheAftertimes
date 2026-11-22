@@ -1,75 +1,28 @@
 // Directory state management
 const currentDirectory = ref('/')
+const previousDirectory = ref('/')
 
-export const useDirectory = () => {
-    const getCurrentDirectory = () => currentDirectory.value
-    
-    const setCurrentDirectory = (path: string) => {
+export const useDirectory = () => ({
+    getCurrentDirectory: () => currentDirectory.value,
+    setCurrentDirectory: (path: string) => {
+        previousDirectory.value = currentDirectory.value
         currentDirectory.value = path
-    }
-    
-    return {
-        getCurrentDirectory,
-        setCurrentDirectory
-    }
-}
+    },
+    getPreviousDirectory: () => previousDirectory.value,
+})
 
+// cd [dir] — supports /, ~, -, ., .. and relative paths like ../a/b
 export default async (args: string[] = []) => {
-    const { getCurrentDirectory, setCurrentDirectory } = useDirectory()
-    
-    if (args.length === 0) {
-        // cd with no arguments goes to root
-        setCurrentDirectory('/')
-        return ''
-    }
-    
-    const targetPath = args[0]
-    const currentPath = getCurrentDirectory()
-    
-    try {
-        let newPath: string
-        
-        if (targetPath === '/') {
-            newPath = '/'
-        } else if (targetPath === '..') {
-            // Go up one directory
-            if (currentPath === '/') {
-                return '' // Already at root, no change
-            }
-            const pathParts = currentPath.split('/').filter(p => p)
-            pathParts.pop() // Remove last directory
-            newPath = pathParts.length > 0 ? '/' + pathParts.join('/') : '/'
-        } else if (targetPath === '.') {
-            // Stay in current directory
-            return ''
-        } else if (targetPath.startsWith('/')) {
-            // Absolute path
-            newPath = targetPath
-        } else {
-            // Relative path
-            newPath = currentPath === '/' ? '/' + targetPath : currentPath + '/' + targetPath
-        }
-        
-        // Normalize path (remove double slashes, etc.)
-        newPath = newPath.replace(/\/+/g, '/')
-        if (newPath !== '/' && newPath.endsWith('/')) {
-            newPath = newPath.slice(0, -1)
-        }
-        
-        // Check if the directory exists by querying content
-        const queryPath = newPath === '/' ? '' : newPath
-        const files = await queryContent(queryPath).find()
-        
-        // Check if there are any files or subdirectories in this path
-        const hasContent = files && files.length > 0
-        
-        if (!hasContent && newPath !== '/') {
-            return `cd: ${targetPath}: No such file or directory`
-        }
-        
-        setCurrentDirectory(newPath)
-        return ''
-    } catch (error) {
-        return `cd: ${targetPath}: No such file or directory`
-    }
+    args = args.filter(Boolean)
+    const { getCurrentDirectory, setCurrentDirectory, getPreviousDirectory } = useDirectory()
+    if (args.length > 1) return 'cd: too many arguments'
+
+    const target = args[0] ?? '~'
+    const path = target === '-' ? getPreviousDirectory() : resolvePath(getCurrentDirectory(), target)
+    const type = pathType(await archiveFiles(), path)
+
+    if (type === null) return `cd: ${target}: No such file or directory`
+    if (type === 'file') return `cd: ${target}: Not a directory`
+    setCurrentDirectory(path)
+    return target === '-' ? path : '' // bash prints the new dir for `cd -`
 }

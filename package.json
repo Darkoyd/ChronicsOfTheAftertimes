@@ -7,7 +7,9 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "sync": "node scripts/sync.mjs",
+    "test": "node scripts/shell.test.mjs"
   },
   "devDependencies": {
     "@nuxt/content": "^2.12.1",

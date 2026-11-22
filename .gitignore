@@ -22,3 +22,6 @@ logs
 .env
 .env.*
 !.env.example
+
+# Generated from the Obsidian vault by scripts/sync.mjs
+content

@@ -1,0 +1,54 @@
+name: Deploy
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch: # "Run workflow" button, also works from the GitHub mobile app
+  repository_dispatch:
+    types: [vault-updated] # sent by the vault repo on push
+  schedule:
+    - cron: "0 6 * * *" # daily fallback
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: Darkoyd/Obsidian
+          token: ${{ secrets.VAULT_TOKEN }} # fine-grained PAT, read-only Contents on Darkoyd/Obsidian
+          path: vault
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run sync
+        env:
+          VAULT: vault
+      - run: npx nuxt generate --preset github_pages
+        env:
+          NUXT_APP_BASE_URL: /${{ github.event.repository.name }}/
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .output/public
+      - id: deployment
+        uses: actions/deploy-pages@v4
